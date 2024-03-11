@@ -579,10 +579,11 @@ bool
 FdQuarterViewer::event(QEvent *e)
 {
   // We call to the inherited processEvent, which is eventually redirecting us
-  // control on our own processEvent()
+  // control on our own processEvent(). If that is the case, it means the
+  // inherited processEvent class did not take care on the event, so we shall
+  // forward it to the base classes
   eventHandeled = TRUE;
   processEvent(e);
-
   if (eventHandeled) {
     if ((e->type() == QEvent::KeyPress) || (e->type() == QEvent::KeyRelease)) {
       QKeyEvent * ke = (QKeyEvent *)e;
@@ -603,6 +604,23 @@ FdQuarterViewer::event(QEvent *e)
   }
 
   return SIM::Coin3D::Quarter::QuarterWidget::event(e);
+}
+
+bool
+FdQuarterViewer::processSoEvent(const SoEvent* event)
+{
+  
+  // We call to the inherited processEvent, which is eventually redirecting us
+  // control on our own processEvent(). If that is the case, it means the
+  // inherited processEvent class did not take care on the event, so we shall
+  // forward it to the base classes
+  eventHandeled = TRUE;
+  processEvent(filteredEvent);
+  if (eventHandeled) {
+    return true;
+  }
+
+  return SIM::Coin3D::Quarter::QuarterWidget::processSoEvent(event);
 }
 
 void
@@ -626,6 +644,7 @@ FdQuarterViewer::init()
 
   seeksensor = new SoTimerSensor(FdQuarterViewer::seeksensorCB, (void*)this);
   resetFrameCounter();
+  filteredEvent = NULL;
   QCoreApplication::instance()->installEventFilter(this);
 }
 
@@ -930,20 +949,7 @@ FdQuarterViewer::setClippingPlanes()
 bool
 FdQuarterViewer::eventFilter(QObject *obj, QEvent *e)
 {
-  if (obj == this) {
-    // Try to parse the event ourselves before quarter turns it on a SoEvent
-    eventHandeled = TRUE;
-    processEvent(e);
-
-    if (eventHandeled) {
-      if ((e->type() == QEvent::KeyPress) || (e->type() == QEvent::KeyRelease))
-      {
-        QKeyEvent * ke = (QKeyEvent *)e;
-        ke->accept();
-      }
-      return true;
-    }
-  }
+  filteredEvent = e;
   return SIM::Coin3D::Quarter::QuarterWidget::eventFilter(obj, e);
 }
 

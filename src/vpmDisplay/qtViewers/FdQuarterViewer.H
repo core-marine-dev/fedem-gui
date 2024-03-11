@@ -240,8 +240,15 @@ public:
     setNavigationModeFile(QUrl("coin:///scxml/navigation/examiner.xml"));
   }
 
-  // To convert the Qt events to the SoQt ones
+  // To deal with the Qt events to the Inventor ones. The way this work is
+  // calling first the event filter, ::eventFilter(), which is redirecting the
+  // job to SIM::Coin3D::Quarter::QuarterWidget::eventFilter(). There, Quarter
+  // is deciding whether the event is handled as a Qt event or an Inventor one,
+  // redirecting the job to ::event() or ::processSoEvent() respectively.
+  // However, we are interested on calling ::processEvent() either way, so on
+  // ::eventFilter() we are storing the Qt event as filteredEvent
   virtual bool event(QEvent *e);
+  virtual bool processSoEvent(const SoEvent* event);
   virtual void processEvent(QEvent* e);
 private:
   void init();
@@ -303,9 +310,11 @@ private:
 
   // To know if processEvent has handled the event
   SbBool eventHandeled;
+  // The event filtered, that is used to call processSoEvent
+  QEvent *filteredEvent;
 
 protected:
-  bool eventFilter(QObject *obj, QEvent *e) override;
+  virtual bool eventFilter(QObject *obj, QEvent *e) override;
   static void draw2DString(const char * str, SbVec2s glsize, SbVec2f position);
   static void printString(const char * str);
   SbVec2f framesPerSecond;
