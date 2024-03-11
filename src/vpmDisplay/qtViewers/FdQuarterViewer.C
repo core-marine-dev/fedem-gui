@@ -281,24 +281,25 @@ FdQuarterViewer::setCameraType(SoType type)
                              dynamic_cast<SoOrthographicCamera*>(newcamera));
   }
 
-  getSoRenderManager()->setCamera(newcamera);
-  getSoEventManager()->setCamera(newcamera);
-
-  //if the superscene has a camera we need to replace it too
-  auto superscene = dynamic_cast<SoSeparator*>(getSoRenderManager()->getSceneGraph());
-  SoSearchAction sa;
-  sa.setInterest(SoSearchAction::FIRST);
-  sa.setType(SoCamera::getClassTypeId());
-  sa.apply(superscene);
-
-  if (sa.getPath()) {
-    SoNode* node = sa.getPath()->getTail();
-    SoGroup* parent = static_cast<SoGroup*>(sa.getPath()->getNodeFromTail(1));
-
-    if (node && node->isOfType(SoCamera::getClassTypeId())) {
-      parent->replaceChild(node, newcamera);
-    }
-  }
+  setCamera(newcamera);
+  // getSoRenderManager()->setCamera(newcamera);
+  // getSoEventManager()->setCamera(newcamera);
+  // 
+  // //if the superscene has a camera we need to replace it too
+  // auto superscene = dynamic_cast<SoSeparator*>(getSoRenderManager()->getSceneGraph());
+  // SoSearchAction sa;
+  // sa.setInterest(SoSearchAction::FIRST);
+  // sa.setType(SoCamera::getClassTypeId());
+  // sa.apply(superscene);
+  // 
+  // if (sa.getPath()) {
+  //   SoNode* node = sa.getPath()->getTail();
+  //   SoGroup* parent = static_cast<SoGroup*>(sa.getPath()->getNodeFromTail(1));
+  // 
+  //   if (node && node->isOfType(SoCamera::getClassTypeId())) {
+  //     parent->replaceChild(node, newcamera);
+  //   }
+  // }
 }
 
 void
@@ -743,30 +744,6 @@ FdQuarterViewer::seeksensorCB(void* data, SoSensor* sensor)
   if (end) {
     thisp->setSeekMode(false);
   }
-}
-
-void
-FdQuarterViewer::moveCameraScreen(const SbVec2f& screenpos)
-{
-  SoCamera* cam = getSoRenderManager()->getCamera();
-  assert(cam);
-  
-  
-  SbViewVolume vv = cam->getViewVolume(getGLWidget()->width() / getGLWidget()->height());
-  SbPlane panplane = vv.getPlane(cam->focalDistance.getValue());
-  
-  constexpr const float mid = 0.5F;
-  SbLine line;
-  vv.projectPointToLine(screenpos + SbVec2f(mid, mid), line);
-  SbVec3f current_planept;
-  panplane.intersect(line, current_planept);
-  vv.projectPointToLine(SbVec2f(mid, mid), line);
-  SbVec3f old_planept;
-  panplane.intersect(line, old_planept);
-  
-  // Reposition camera according to the vector difference between the
-  // projected points.
-  cam->position = cam->position.getValue() - (current_planept - old_planept);
 }
 
 void

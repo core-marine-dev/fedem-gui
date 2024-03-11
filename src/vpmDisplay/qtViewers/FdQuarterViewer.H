@@ -260,7 +260,6 @@ private:
   static void convertOrtho2Perspective(const SoOrthographicCamera* in, SoPerspectiveCamera* out);
   void getCameraCoordinateSystem(SoCamera* camera, SoNode* root, SbMatrix& matrix, SbMatrix& inverse);
   static void seeksensorCB(void* data, SoSensor* sensor);
-  void moveCameraScreen(const SbVec2f& screenpos);
   void resetFrameCounter();
   SbVec2f addFrametime(double ft);
   void setClippingPlanes(void);
