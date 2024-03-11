@@ -13,12 +13,12 @@
 #include <Inventor/actions/SoSearchAction.h>
 #include <Inventor/lists/SoCallbackList.h>
 #include <Inventor/sensors/SoTimerSensor.h>
+#include <Inventor/nodes/SoCamera.h>
 #include <Inventor/nodes/SoDirectionalLight.h>
 #include <Quarter/QuarterWidget.h>
 
 
 class SbViewportRegion;
-class SoCamera;
 class SoOrthographicCamera;
 class SoPerspectiveCamera;
 class SoSelection;
@@ -238,6 +238,10 @@ public:
   {
     SIM::Coin3D::Quarter::QuarterWidget::setSceneGraph(root);
     setNavigationModeFile(QUrl("coin:///scxml/navigation/examiner.xml"));
+    // Grant that setCamera is called
+    SoCamera* camera = getCamera();
+    getSoRenderManager()->setCamera(NULL);
+    setCamera(camera);
   }
 
   // To deal with the Qt events to the Inventor ones. The way this work is
